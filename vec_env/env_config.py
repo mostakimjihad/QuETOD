@@ -17,4 +17,6 @@ class Config(object):
 
     WEIGHT = 0.65
 
+    VEHICLE_POSITION = [random.randint(0, 30), random.randint(0, 1000)]
+
 
