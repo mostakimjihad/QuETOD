@@ -11,7 +11,7 @@ class Config(object):
     TASK_SIZE = random.randint(10, 60)
     V2V_NOISE = -70
     MAX_TASK_DELAY = random.uniform(0.1, 2)
-    MAX_ENERGY_CONSUMPTION = random.uniform()
+    MAX_ENERGY_CONSUMPTION = 10
     REQUIRED_CPU_CYCLE = 800
     V2V_TRANSMISSION_POWER = 100
 
