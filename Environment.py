@@ -5,7 +5,7 @@ import numpy as np
 
 class Environment:
     def __init__(self):
-        self.n_vehicle = Config.n_vehicle()
+        self.n_vehicle = 30
         self.n_rsu = Config.N_RSU
         self.vehicles = [Vehicle(vehicle_id=i) for i in range(0, self.n_vehicle)]
         self.rsu = [RSU(rsu_id=i) for i in range(0, self.n_rsu)]
@@ -16,6 +16,7 @@ class Environment:
         self.transmission_rates = [[0] * self.n_vehicle for _ in range(self.n_vehicle)]
         self.reward = 0
         self.terminate = False
+        self.experience = 0
         for i in range(self.n_vehicle):
             for k in range(i + 1, self.n_vehicle):
                 rate = Config.v2v_transmission_rate()
@@ -27,18 +28,25 @@ class Environment:
         i = self.index_i
         j = self.index_j
 
+        #local Execution
         if action == i:
             t_execution = self.vehicles[i].task_queue[j]['required_cpu_cycle']/ self.vehicles[i].cpu_capacity
             t = self.queue_delay[i] + t_execution
 
             if t <= self.vehicles[i].task_queue[j]['task_delay']:
                 self.reward = 1 - (t/self.vehicles[i].task_queue[j]['task_delay'])
+                # self.reward = -2 * t
+                self.experience += 1 - (t/self.vehicles[i].task_queue[j]['task_delay'])
 
             else:
-                self.reward = -8 * t/self.vehicles[i].task_queue[j]['task_delay']
+                self.reward = 1 - (t / self.vehicles[i].task_queue[j]['task_delay'])
+                self.experience += 0
+                # self.reward = -5 * t
+                # self.reward = -0.1 * (t - self.vehicles[i].task_queue[j]['task_delay'])
 
             self.queue_delay[i] += self.vehicles[i].task_queue[j]['required_cpu_cycle']/ self.vehicles[i].cpu_capacity
 
+        #edge execution
         else:
             k = action
             t_execution = self.vehicles[i].task_queue[j]['required_cpu_cycle'] / self.vehicles[k].cpu_capacity
@@ -46,10 +54,17 @@ class Environment:
             t = self.queue_delay[k] + t_execution + t_transmission
 
             if t <= self.vehicles[i].task_queue[j]['task_delay']:
+                #positive reward
                 self.reward = 1 - (t/self.vehicles[i].task_queue[j]['task_delay'])
+                self.experience += 1 - (t / self.vehicles[i].task_queue[j]['task_delay'])
+                # self.reward = -7 * t
 
             else:
-                self.reward = -8 * t/self.vehicles[i].task_queue[j]['task_delay']
+                #panalty
+                # self.reward = -0.2
+                # self.reward = -10 * t
+                self.reward = 1 - (t/self.vehicles[i].task_queue[j]['task_delay'])
+                self.experience += 0
 
             self.queue_delay[k] += self.vehicles[i].task_queue[j]['required_cpu_cycle'] / self.vehicles[k].cpu_capacity
 
@@ -70,20 +85,15 @@ class Environment:
         return state, self.reward, self.terminate
 
     def reset(self):
-        self.vehicles = [Vehicle(vehicle_id=i) for i in range(0, self.n_vehicle)]
-        self.rsu = [RSU(rsu_id=i) for i in range(0, self.n_rsu)]
+        # self.vehicles = [Vehicle(vehicle_id=i) for i in range(0, self.n_vehicle)]
+        # self.rsu = [RSU(rsu_id=i) for i in range(0, self.n_rsu)]
         self.queue_delay = [0] * self.n_vehicle
         self.index_i = 0
         self.index_j = 0
         self.task_scheduler = [0] * self.n_vehicle
-        self.transmission_rates = [[0] * self.n_vehicle for _ in range(self.n_vehicle)]
         self.reward = 0
         self.terminate = False
-        for i in range(self.n_vehicle):
-            for k in range(i + 1, self.n_vehicle):
-                rate = Config.v2v_transmission_rate()
-                self.transmission_rates[i][k] = rate
-                self.transmission_rates[k][i] = rate
+        self.experience = 0
 
         state = np.concatenate((self.task_scheduler, self.queue_delay))
         return state

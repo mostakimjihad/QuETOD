@@ -2,10 +2,9 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import numpy as np
-import gym
 
 BATCH_SIZE = 32
-LR = 0.01
+LR = 0.001
 EPSILON = 0.9
 GAMMA = 0.9
 TARGET_REPLACE_ITER = 100
@@ -15,9 +14,9 @@ MEMORY_CAPACITY = 2000
 class Net(nn.Module):
     def __init__(self, states, actions):
         super(Net, self).__init__()
-        self.fc1 = nn.Linear(states, 50)
+        self.fc1 = nn.Linear(states, 128)
         self.fc1.weight.data.normal_(0, 0.1)
-        self.out = nn.Linear(50, actions)
+        self.out = nn.Linear(128, actions)
         self.out.weight.data.normal_(0, 0.1)
 
     def forward(self, x):

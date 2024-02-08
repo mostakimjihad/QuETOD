@@ -10,7 +10,7 @@ class Config:
 
     @staticmethod
     def n_vehicle():
-        return random.randint(20, 40)
+        return random.randint(8, 10)
 
     @staticmethod
     def obu_cpu_capacity():

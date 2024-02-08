@@ -13,7 +13,7 @@ class Vehicle:
         self.generate_random_tasks()
 
     def generate_random_tasks(self):
-        num_tasks = Config.n_task()
+        num_tasks = 1
         for _ in range(num_tasks):
             task = {
                 'task_delay': Config.max_task_delay(),
